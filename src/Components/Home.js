@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react'
-import Navbar from './Navbar.js'
+import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 
 function Home(props) {
@@ -9,43 +8,35 @@ function Home(props) {
   async function submit(e) {
     e.preventDefault();
 
-    if (desc !== '' && cost !== 0) {
+    if (desc !== '' && cost !== '' && cost !== 0) {
       try {
-
-        await axios.post('http://localhost:8000/details', { desc, cost, email: props.user?.email })
+        await axios.post('http://localhost:8000/add_details', { desc, cost, email: props.user?.email })
           .then(res => {
             if (res.data == "success") {
               alert("Added successfully.");
-              getData();
-            }
-            else {
+              setDesc('');
+              setCost(0);
+              props.progress();
+            } else if (res.data == "failed") {
+              alert("Your balance is insufficient for this cost");
+            } else {
               alert("unsuccess");
             }
           }).catch(e => {
             console.log(e);
           });
-
       }
       catch (e) {
-
         console.log(e);
-
       }
-
     }
     else {
       alert("Empty field can't be submitted!");
     }
-
-    setDesc('')
-    setCost(0)
-
-    alert("If description and cost fields are not empty then please clear them and enter your next record to add successfully.");
-    
   }
 
-  function getData() {
-    axios.get("http://localhost:8000/api")
+  async function getData() {
+    axios.get("http://localhost:8000/get_user")
       .then(res => {
         const data = res.data;
         console.log("Data has been received successfully");
@@ -57,32 +48,40 @@ function Home(props) {
       })
   }
 
-  return (
-    <>
-      <Navbar user={props.user} />
+  useEffect(() => {
+    getData()
+  }, [cost])
 
-      <h1 className='login-heading'>Add descriptions with costs</h1>
-      <div className='container home'>
-        <form method='post'>
-          <div className='row'>
-            <div className='col-7'>
-              <input type="text" id="desc" onChange={(e) => { setDesc(e.target.value) }} className="form-control" placeholder='Description' required />
-            </div>
-            <div className='col-3'>
-              <input type="number" id="cost" onChange={(e) => { setCost(e.target.value) }} className="form-control" placeholder='Cost' required />
-            </div>
-            <div className='col-2'>
-              <button type="submit" className="btn btn-outline-dark" onClick={submit}>Submit</button>
-            </div>
-          </div>
-        </form>
+  return (
+    <div className='add'>
+      <h2 className='heading'>Add Cost</h2>
+      <p className='para'>Welcome To HomeCost</p>
+      <div id='addCost' className='container'>
         <div className='row'>
-          <div className='col-3'>
-            <button className="btn btn-outline-dark my-4" onClick={() => props.setUser({})}>logout</button>
+          <div className='col'>
+
+          </div>
+        </div>
+        <div className='row'>
+          <div className='col'>
+            <h3 className='mb-4 text-center'>Add Expance With Details</h3>
+            <form action='' method=''>
+              <div className='mb-4'>
+                <label htmlFor="desc" className="form-label text-secondary">Description</label>
+                <input type="text" id="desc" value={desc} onChange={(e) => { setDesc(e.target.value) }} className="form-control form-control-lg" />
+              </div>
+              <div className='mb-4'>
+                <label htmlFor="cost" className="form-label text-secondary">Cost (In BDT)</label>
+                <input type="number" id="cost" value={cost} onChange={(e) => { setCost(e.target.value) }} className="form-control form-control-lg" />
+              </div>
+              <div className='d-grid gap-2 mb-4'>
+                <button type="submit" className="btn btn-success" onClick={submit}>ADD TO EXPANCES</button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }
 

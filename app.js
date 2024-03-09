@@ -2,6 +2,12 @@ const express = require('express')
 const mongoose = require('mongoose')
 const cors = require("cors")
 const bodyParser = require("body-parser")
+const { body, validationResult } = require('express-validator') //server side validation
+const bcrypt = require('bcrypt') //password hashing
+const jwt = require('jsonwebtoken'); //JWT authentication
+
+const jwt_secrate = "iamagoodboy"
+
 const app = express()
 const port = 8000
 
@@ -16,49 +22,73 @@ async function main() {
     console.log("Connection build successfully");
 }
 
-const userSchema = new mongoose.Schema({
-    name: String,
-    email: String,
-    password: String,
-    balance: Number
+const usersSchema = new mongoose.Schema({
+    name: { type: String },
+    email: { type: String },
+    password: { type: String },
+    balance: { type: Number, default: 0.00 },
+    limit: { type: Number, default: 0.00 }
 });
 
 const detailsSchema = new mongoose.Schema({
-    month: String,
-    date: String,
-    time: String,
-    desc: String,
-    cost: String,
-    email: String
+    month: { type: String },
+    date: { type: String },
+    time: { type: String },
+    desc: { type: String },
+    cost: { type: Number },
+    email: { type: String }
 });
 
-const USER = mongoose.model('user', userSchema);
+const balancesSchema = new mongoose.Schema({
+    month: { type: String },
+    date: { type: String },
+    time: { type: String },
+    amount: { type: Number },
+    email: { type: String }
+});
 
-const DETAILS = mongoose.model('details', detailsSchema); //DB connections ends here
+const USERS = mongoose.model('users', usersSchema);
+
+const DETAILS = mongoose.model('details', detailsSchema);
+
+const BALANCES = mongoose.model('balances', balancesSchema);//DB connections ends here
 
 app.get('/', cors(), function (req, res) {
 
 })
 
-app.post('/signup', async (req, res) => {
+app.post('/signup', [
+    body('name', 'Enter a valid name').isLength({ min: 3 }),
+    body('email', 'Enter a valid email').isEmail(),
+    body('password', 'Enter a valid password').isLength({ min: 5 })
+], async (req, res) => {
+    const result = validationResult(req);
+    if (!result.isEmpty()) {
+        return res.send({ errors: result.array() });
+    }
 
     const { name, email, password } = req.body;
+
+    /*const salt = await bcrypt.genSalt(10);
+    const secPass = await bcrypt.hash(password, salt);*/
 
     const data = {
         name: name,
         email: email,
-        password: password,
-        balance: 0.00
+        //password: secPass
+        password: password //tmp
     }
 
-    const check = await USER.findOne(data);
+    console.log(data)
+
+    const check = await USERS.findOne({ email: email });
 
     try {
         if (check) {
             res.json("failed");
         }
         else {
-            await USER.insertMany([data]);
+            await USERS.insertMany([data]);
             res.json("success");
         }
     }
@@ -70,9 +100,31 @@ app.post('/signup', async (req, res) => {
 
 var tmpUser;
 
-app.post('/', async (req, res) => {
+app.post('/login', [
+    body('email', 'Enter a valid email').isEmail(),
+    body('password', 'Enter a valid password').isLength({ min: 5 })
+], async (req, res) => {
+    const result = validationResult(req);
+    if (!result.isEmpty()) {
+        return res.send({ errors: result.array() });
+    }
 
     const { email, password } = req.body;
+
+    /*for user login authentication
+    const user = await USERS.findOne({ email: email });
+    if (!user) {
+        return res.json("not exists!");
+    }
+    const comparePassword = await bcrypt.compare(password, user.password);
+    if (!comparePassword) {
+        return res.json("not exists!");
+    }
+    const bigData = {
+        id: user._id
+    }
+    const authToken = jwt.sign(bigData, jwt_secrate);
+    console.log(authToken)*/
 
     tmpUser = email;
 
@@ -81,11 +133,11 @@ app.post('/', async (req, res) => {
         password: password
     }
 
-    const check = await USER.findOne(data);
+    const check = await USERS.findOne(data);
 
     try {
         if (check) {
-            await USER.findOne(data);
+            await USERS.findOne(data);
             res.json("success");
         }
         else {
@@ -98,9 +150,9 @@ app.post('/', async (req, res) => {
 
 })
 
-app.get('/api', async (req, res) => {
+app.get('/get_user', async (req, res) => {
     try {
-        const userData = await USER.findOne({ email: tmpUser });
+        const userData = await USERS.findOne({ email: tmpUser });
         res.send({ user: userData });
     }
     catch (e) {
@@ -108,43 +160,36 @@ app.get('/api', async (req, res) => {
     }
 })
 
-app.get('/api_d', async (req, res) => {
+app.get('/get_rem', async (req, res) => {
+    const d = new Date();
+
+    const m = d.getMonth();
+
+    const totalBalanceOfCurrentMonth = await BALANCES.find({ month: m, email: tmpUser });
+
+    let total = 0;
+
+    for (let i = 0; i < totalBalanceOfCurrentMonth.length; i++) {
+        total += totalBalanceOfCurrentMonth[i].amount;
+    }
+
     try {
-        const details = await DETAILS.find({ email: tmpUser });
-        res.send({ data: details });
+        res.send({ total })
     }
     catch (e) {
         console.log(e)
     }
 })
 
-app.post('/add', async (req, res) => {
-
-    const { amount, email } = req.body;
-
-    const check = await USER.findOne({ email: email });
-
-    const newBalance = Number(check.balance) + Number(amount);
-
-    try {
-        await USER.updateOne({ email: email }, { $set: { balance: newBalance } });
-        res.json("success");
-    }
-    catch (e) {
-        console.log(e);
-    }
-
-})
-
-app.post('/details', async (req, res) => {
+app.post('/add_details', async (req, res) => {
 
     const { desc, cost, email } = req.body;
 
     const date = new Date();
 
-    const check = await USER.findOne({ email: email });
+    const user = await USERS.findOne({ email: email });
 
-    const newBalance = Number(check.balance) - Number(cost);
+    const newBalance = Number(user.balance) - Number(cost);
 
     const data = {
         month: date.getMonth(),
@@ -156,8 +201,107 @@ app.post('/details', async (req, res) => {
     }
 
     try {
-        await DETAILS.insertMany([data]);
-        await USER.updateOne({ email: email }, { $set: { balance: newBalance } });
+        if (newBalance >= 0) {
+            await DETAILS.insertMany([data]);
+            await USERS.updateOne({ email: email }, { $set: { balance: newBalance } });
+            res.json("success");
+        } else {
+            res.json("failed");
+        }
+    }
+    catch (e) {
+        console.log(e);
+    }
+
+})
+
+app.post('/add_amount', async (req, res) => {
+    const { amount, email } = req.body;
+
+    const user = await USERS.findOne({ email: email });
+
+    const date = new Date();
+
+    const data = {
+        month: date.getMonth(),
+        date: date.toLocaleDateString(),
+        time: date.toLocaleTimeString(),
+        amount: amount,
+        email: email
+    }
+
+    const d = new Date();
+
+    const m = d.getMonth();
+
+    const limit = user.limit;
+
+    const totalBalanceOfCurrentMonth = await BALANCES.find({ month: m, email: email });
+
+    let total = 0, newBalance;
+
+    for (let i = 0; i < totalBalanceOfCurrentMonth.length; i++) {
+        total += totalBalanceOfCurrentMonth[i].amount;
+    }
+
+    try {
+        if (total + Number(amount) <= limit) {
+            newBalance = Number(user.balance) + Number(amount);
+            await USERS.updateOne({ email: email }, { $set: { balance: newBalance } });
+            await BALANCES.insertMany([data]);
+            res.json("success");
+        } else {
+            res.json("failed");
+        }
+    }
+    catch (e) {
+        console.log(e);
+    }
+})
+
+app.post('/change_limit', async (req, res) => {
+    const { limit, email } = req.body;
+
+    try {
+        await USERS.updateOne({ email: email }, { $set: { limit: limit } });
+        res.json("success");
+    }
+    catch (e) {
+        console.log(e);
+    }
+})
+
+app.get('/get_history', async (req, res) => {
+    try {
+        const details = await DETAILS.find({ email: tmpUser });
+        res.send({ data: details });
+    }
+    catch (e) {
+        console.log(e)
+    }
+})
+
+app.get('/get_balance_history', async (req, res) => {
+    try {
+        const details = await BALANCES.find({ email: tmpUser });
+        res.send({ data: details });
+    }
+    catch (e) {
+        console.log(e)
+    }
+})
+
+app.post('/remove', async (req, res) => {
+
+    const { id, cost, email } = req.body;
+
+    const user = await USERS.findOne({ email: email });
+
+    const newBalance = Number(user.balance) + Number(cost);
+
+    try {
+        await USERS.updateOne({ email: email }, { $set: { balance: newBalance } });
+        await DETAILS.deleteOne({ _id: id });
         res.json("success");
     }
     catch (e) {
@@ -166,23 +310,24 @@ app.post('/details', async (req, res) => {
 
 })
 
-app.post('/remove', async (req, res) => {
-
-    const { toDelete, toDeleteCost, email } = req.body;
-
-    const user = await USER.findOne({ email: email });
-
-    const new_bal = Number(user.balance) + Number(toDeleteCost);
-
+app.get('/getProgress', async (req, res) => {
     try {
-        await USER.updateOne({ email: user.email }, { $set: { balance: new_bal } });
-        await DETAILS.deleteOne({ _id: toDelete });
-        res.json("success");
-    }
-    catch (e) {
+        const user = await USERS.findOne({ email: tmpUser });
+        const totalBalance = await BALANCES.find({ email: tmpUser });
+        let tb = 0, prog;
+        for (let i = 0; i < totalBalance.length; i++) {
+            tb += totalBalance[i].amount;
+        }
+        if (tb !== 0) {
+            prog = (user.balance * 100) / tb;
+            console.log(tb, user.balance, prog);
+            res.send({ prog });
+        } else {
+            res.json("failed");
+        }
+    } catch (e) {
         console.log(e);
     }
-
 })
 
 /*app.post('/update', async (req, res) => {

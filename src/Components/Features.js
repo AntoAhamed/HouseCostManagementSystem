@@ -1,20 +1,17 @@
 import React from 'react'
 
-function About() {
+function Features() {
   return (
-    <div id='about' className='container'>
+    <div id='features' className='container'>
       <div className='row'>
         <div className="col text-center mb-4" style={{ fontSize: "40px" }}>
-          <b>About Us</b>
+          <b>Features</b>
         </div>
       </div>
       <div className='row'>
         <div className='col'>
           <p>
-            Welcome to <strong>HomeCost</strong>, a Web-based MERN stack application designed to help you stay organized about your financial condition.
-          </p>
-          <p>
-            At HomeCost, we understand that financial organization is an essential part of daily life. Whether you're a student, a professional, or just someone who likes to keep things organized, having a reliable and user-friendly app can make all the difference.
+            At <strong>HomeCost</strong>, we understand that financial organization is an essential part of daily life. Whether you're a student, a professional, or just someone who likes to keep things organized, having a reliable and user-friendly app can make all the difference.
 
             Our team is made up of experienced developers and designers who are passionate about creating high-quality applications that meet the needs of our users. We're dedicated to delivering a seamless and intuitive experience that makes it easy to take, organize, and access your financial details anytime, anywhere.
 
@@ -23,7 +20,7 @@ function About() {
             Our goal is to provide you with an exceptional experience that helps you stay organized. We welcome your feedback and suggestions and are committed to continuously improving our app to meet the needs of our users.
           </p>
           <p>
-            <strong>Thank you</strong> for choosing <strong>HomeCost</strong> as your go-to financial management app. We're excited to be a part of your journey towards greater productivity and organization.
+            <strong>Thank you</strong> for choosing <strong>HomeCost</strong> as your financial management app. We're excited to be a part of your journey towards greater productivity and organization.
           </p>
         </div>
       </div>
@@ -31,4 +28,4 @@ function About() {
   )
 }
 
-export default About
+export default Features

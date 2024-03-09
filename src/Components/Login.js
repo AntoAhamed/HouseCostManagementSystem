@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Gen_navbar from './Gen_navbar';
 
 function Login(props) {
     const [email, setEmail] = useState('')
@@ -13,11 +12,10 @@ function Login(props) {
 
         if (email !== '' && password !== '') {
             try {
-
-                await axios.post('http://localhost:8000/', { email, password })
+                await axios.post('http://localhost:8000/login', { email, password })
                     .then(res => {
-                        if (res.data == "failed") {
-                            alert("User dose not exist!");
+                        if (res.data === "failed") {
+                            alert("User dose not exists!");
                         }
                         else {
                             alert("You are loged in successfully");
@@ -27,12 +25,9 @@ function Login(props) {
                     }).catch(e => {
                         console.log(e);
                     });
-
             }
             catch (e) {
-
                 console.log(e);
-
             }
         }
         else {
@@ -40,8 +35,8 @@ function Login(props) {
         }
     }
 
-    function getData() {
-        axios.get("http://localhost:8000/api")
+    async function getData() {
+        axios.get("http://localhost:8000/get_user")
             .then(res => {
                 const data = res.data;
                 console.log("Data has been received successfully");
@@ -53,24 +48,46 @@ function Login(props) {
             })
     }
 
-    /*useEffect(() => {
-      getData();
-    }, [])*/
-
     return (
-        <div>
-            <Gen_navbar />
-            
+        <>
+            <div id='login' className='container'>
+                <div className='row'>
+                    <div className='col'>
+                        <p>Welcome To HomeCost</p>
+                    </div>
+                    <div className='col'>
+                        <h3 className='m-4'>Login</h3>
+                        <p className='m-4'>Login to enjoy our features</p>
+                        <form action='' method='' className='m-4'>
+                            <div className="mb-4">
+                                <label htmlFor="email" className="form-label text-body-secondary">Email</label>
+                                <input type="email" value={email} onChange={(e) => { setEmail(e.target.value) }} className="form-control form-control-lg" id="email" required />
+                            </div>
+                            <div className="mb-4">
+                                <label htmlFor="password" className="form-label text-body-secondary">Password</label>
+                                <input type="password" value={password} onChange={(e) => { setPassword(e.target.value) }} className="form-control form-control-lg" id="password" required />
+                            </div>
+                            <div className="d-grid gap-2 mb-4">
+                                <button type="submit" onClick={login} className="btn btn-success">Login</button>
+                            </div>
+                        </form>
+                        <p className='text-center'>Don't have an account?
+                            <Link to='/signup'>signup</Link>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {/*<div>            
             <h1 style={{textAlign: 'center', fontSize: '67px', marginTop: '30px', marginBottom: '50px'}}>Welcome to monthly family cost app</h1>
             <h1 className='login-heading'>Login</h1>
             <form method='post' className='login-form'>
                 <div className="mb-3">
                     <label htmlFor="email" className="form-label">Email</label>
-                    <input type="email" onChange={(e) => { setEmail(e.target.value) }} className="form-control" id="email" placeholder="Email" required />
+                    <input type="email" value={email} onChange={(e) => { setEmail(e.target.value) }} className="form-control" id="email" placeholder="Email" required />
                 </div>
                 <div className="mb-3">
                     <label htmlFor="password" className="form-label">Password</label>
-                    <input type="password" onChange={(e) => { setPassword(e.target.value) }} className="form-control" id="password" placeholder="Password" required />
+                    <input type="password" value={password} onChange={(e) => { setPassword(e.target.value) }} className="form-control" id="password" placeholder="Password" required />
                 </div>
                 <div clss="mb-3">
                     <button type="submit" onClick={login} className="btn btn-outline-dark">Login</button>
@@ -79,7 +96,9 @@ function Login(props) {
             <p className='login-para'>Don't have an account?
                 <Link to='/signup'>signup</Link>
             </p>
-        </div>
+    </div>*/}
+        </>
+
     )
 }
 
