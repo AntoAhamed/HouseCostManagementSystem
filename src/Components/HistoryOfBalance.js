@@ -20,12 +20,13 @@ function HistoryOfBalance(props) {
       })
   }
 
-  async function getUser() {
+  /*async function getUser() {
     axios.get("http://localhost:8000/get_user")
       .then(res => {
         const data = res.data;
         console.log("Data has been received successfully");
         props.setUser(data.user);
+        localStorage.setItem("user", JSON.stringify(props.user));
         console.log(data);
       }).catch(e => {
         console.log("Data retrive unsuccessfull");
@@ -48,7 +49,7 @@ function HistoryOfBalance(props) {
     catch (e) {
       console.log(e);
     }
-  }
+  }*/
 
   useEffect(() => {
     //getUser();

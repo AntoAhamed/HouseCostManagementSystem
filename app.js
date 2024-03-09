@@ -4,7 +4,8 @@ const cors = require("cors")
 const bodyParser = require("body-parser")
 const { body, validationResult } = require('express-validator') //server side validation
 const bcrypt = require('bcrypt') //password hashing
-const jwt = require('jsonwebtoken'); //JWT authentication
+const jwt = require('jsonwebtoken') //JWT authentication
+const fetchuser = require('./middleware')
 
 const jwt_secrate = "iamagoodboy"
 
@@ -67,19 +68,20 @@ app.post('/signup', [
         return res.send({ errors: result.array() });
     }
 
-    const { name, email, password } = req.body;
+    /*const { name, email, password } = req.body;
 
-    /*const salt = await bcrypt.genSalt(10);
-    const secPass = await bcrypt.hash(password, salt);*/
+    const salt = await bcrypt.genSalt(10);
+    const secPass = await bcrypt.hash(password, salt);
 
-    const data = {
+    const userData = {
         name: name,
         email: email,
-        //password: secPass
-        password: password //tmp
+        password: secPass
     }
 
-    console.log(data)
+    const data = { user: { id: user.id } }
+    const jwtData = jwt.sign(data, jwt_secrate);
+    console.log(jwtData);
 
     const check = await USERS.findOne({ email: email });
 
@@ -88,17 +90,43 @@ app.post('/signup', [
             res.json("failed");
         }
         else {
-            await USERS.insertMany([data]);
+            await USERS.insertMany([userData]);
             res.json("success");
         }
     }
     catch (e) {
         console.log(e);
+    }*/
+
+    try {
+        const { name, email, password } = req.body;
+
+        let user = await USERS.findOne({ email: email });
+
+        if (!user) {
+            const salt = await bcrypt.genSalt(10);
+            const secPass = await bcrypt.hash(password, salt);
+
+            user = await USERS.create({
+                name: name,
+                email: email,
+                password: secPass
+            })
+
+            const data = { user: { id: user.id } }
+            const authToken = jwt.sign(data, jwt_secrate);
+
+            res.json({ authToken });
+        } else {
+            res.json("failed");
+        }
+    } catch (e) {
+        console.log(e);
     }
 
 })
 
-var tmpUser;
+var tmpToken, tmpUser;
 
 app.post('/login', [
     body('email', 'Enter a valid email').isEmail(),
@@ -124,7 +152,7 @@ app.post('/login', [
         id: user._id
     }
     const authToken = jwt.sign(bigData, jwt_secrate);
-    console.log(authToken)*/
+    console.log(authToken)
 
     tmpUser = email;
 
@@ -146,9 +174,53 @@ app.post('/login', [
     }
     catch (e) {
         console.log(e);
+    }*/
+
+    try {
+        let user = await USERS.findOne({ email });
+        if (user) {
+            const comparePassword = await bcrypt.compare(password, user.password);
+            if (!comparePassword) {
+                return res.json("not exists!");
+            }
+            const data = { user: { id: user.id } }
+            const authToken = jwt.sign(data, jwt_secrate);
+
+            const bigData = jwt.verify(authToken, jwt_secrate);
+            const loggedUserId = bigData.user;
+
+            const loggedUser = await USERS.findById(loggedUserId.id).select("-password");
+
+            tmpUser = loggedUser.email;
+
+            tmpToken = authToken;
+
+            console.log({ loggedUser });
+            res.json({ loggedUser });
+        } else {
+            res.json("failed");
+        }
+    } catch (e) {
+        console.log(e);
     }
 
 })
+
+/*app.get('/get_logged_user', fetchuser, async (req, res) => {
+    try {
+        userId = req.user.id;
+        const user = await USERS.findById(userId).select("-password");
+
+        tmpUser = user.email;
+
+        res.send({ user: user });
+        console.log(user);
+    }
+    catch (e) {
+        console.log(e)
+        res.json("f");
+    }
+})*/
 
 app.get('/get_user', async (req, res) => {
     try {
@@ -320,7 +392,6 @@ app.get('/getProgress', async (req, res) => {
         }
         if (tb !== 0) {
             prog = (user.balance * 100) / tb;
-            console.log(tb, user.balance, prog);
             res.send({ prog });
         } else {
             res.json("failed");
@@ -329,44 +400,6 @@ app.get('/getProgress', async (req, res) => {
         console.log(e);
     }
 })
-
-/*app.post('/update', async (req, res) => {
-
-    const { e_name, u_name } = req.body;
-
-    try {
-        await CRUD.updateMany({ name: e_name }, { $set: { name: u_name } });
-        res.json("success");
-    }
-    catch (e) {
-        console.log(e);
-    }
-
-})
-
-app.post('/delete', async (req, res) => {
-
-    const { name } = req.body;
-
-    try {
-        await CRUD.deleteMany({ name: name });
-        res.json("success");
-    }
-    catch (e) {
-        console.log(e);
-    }
-
-})
-
-app.get('/api', async (req, res) => {
-    try {
-        const userData = await CRUD.find({});
-        res.send({ status: "ok", data: userData });
-    }
-    catch (e) {
-        console.log(e)
-    }
-})*/
 
 //START THE SERVER
 app.listen(port, () => {

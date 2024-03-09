@@ -39,6 +39,7 @@ function limit(props) {
                 const data = res.data;
                 console.log("Data has been received successfully");
                 props.setUser(data.user);
+                localStorage.setItem("user", JSON.stringify(props.user));
                 console.log(data);
             }).catch(e => {
                 console.log("Data retrive unsuccessfull");

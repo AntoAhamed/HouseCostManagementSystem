@@ -8,6 +8,7 @@ function Navbar(props) {
 
     const logout = () => {
         props.setUser({});
+        localStorage.setItem("user", JSON.stringify(props.user));
         navigate('/');
     }
 

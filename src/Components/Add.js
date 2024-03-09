@@ -16,7 +16,6 @@ function Add(props) {
                     .then(res => {
                         if (res.data === "success") {
                             alert("Balance added successfully");
-                            props.progress();
                             navigate("/");
                         }
                         if (res.data === "failed") {
@@ -41,6 +40,7 @@ function Add(props) {
                 const data = res.data;
                 console.log("Data has been received successfully");
                 props.setUser(data.user);
+                localStorage.setItem("user", JSON.stringify(props.user));
                 console.log(data);
             }).catch(e => {
                 console.log("Data retrive unsuccessfull");

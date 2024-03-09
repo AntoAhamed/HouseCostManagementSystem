@@ -21,11 +21,12 @@ function HistoryOfCost(props) {
   }
 
   async function getUser() {
-    axios.get("http://localhost:8000/get_user")
+    await axios.get("http://localhost:8000/get_user")
       .then(res => {
         const data = res.data;
         console.log("Data has been received successfully");
         props.setUser(data.user);
+        localStorage.setItem("user", JSON.stringify(props.user));
         console.log(data);
       }).catch(e => {
         console.log("Data retrive unsuccessfull");

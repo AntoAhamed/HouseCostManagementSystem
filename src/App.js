@@ -18,18 +18,26 @@ import axios from 'axios';
 import { useEffect } from 'react';
 
 function App() {
-  const [user, setUser] = useState({})
-  console.log(user)
+  let initUser;
+  if (localStorage.getItem("user") === null) {
+    initUser = {};
+  } else {
+    initUser = JSON.parse(localStorage.getItem("user"));
+  }
+
+  const [user, setUser] = useState(initUser)
 
   const [prog, setProg] = useState(0)
+
+  console.log(user)
 
   const progress = async () => {
     await axios.get('http://localhost:8000/getProgress')
       .then(res => {
         if (res.data !== "failed") {
-          const data = res.data;
-          console.log(data.prog);
-          setProg(data.prog.toFixed(2));
+          const data = res.data.prog;
+          console.log(data);
+          setProg(data.toFixed(2));
           console.log(prog);
         } else {
           setProg(0);
@@ -39,9 +47,13 @@ function App() {
       });
   }
 
-  useEffect(()=>{
+  useEffect(() => {
     progress();
-  },[])
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem("user", JSON.stringify(user));
+  }, [user])
 
   return (
     <div className='App'>
@@ -52,7 +64,7 @@ function App() {
             <Route path="login" element={user._id ? <Home user={user} setUser={setUser} progress={progress} /> : <Login user={user} setUser={setUser} />} />
             <Route path="signup" element={user._id ? <Home user={user} setUser={setUser} progress={progress} /> : <Signup />} />
             <Route path="add" element={user._id ? <Add user={user} setUser={setUser} progress={progress} /> : <Login user={user} setUser={setUser} />} />
-            <Route path="historyOfCost" element={user._id ? <HistoryOfCost user={user} setUser={setUser} progress={progress} /> : <Login user={user} setUser={setUser} />} />
+            <Route path="historyOfCost" element={user._id ? <HistoryOfCost user={user} setUser={setUser} /> : <Login user={user} setUser={setUser} />} />
             <Route path="historyOfBalance" element={user._id ? <HistoryOfBalance /> : <Login user={user} setUser={setUser} />} />
             <Route path="about" element={<About />} />
             <Route path="contact" element={<Contact />} />

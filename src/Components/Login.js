@@ -18,8 +18,10 @@ function Login(props) {
                             alert("User dose not exists!");
                         }
                         else {
-                            alert("You are loged in successfully");
-                            getData();
+                            alert("You are logged in successfully");
+                            props.setUser(res.data.loggedUser);
+                            localStorage.setItem("user", JSON.stringify(props.user));
+                            console.log(props.user);
                             navigate("/");
                         }
                     }).catch(e => {
@@ -33,19 +35,6 @@ function Login(props) {
         else {
             alert("Empty field can't be submitted!");
         }
-    }
-
-    async function getData() {
-        axios.get("http://localhost:8000/get_user")
-            .then(res => {
-                const data = res.data;
-                console.log("Data has been received successfully");
-                props.setUser(data.user);
-                console.log(data);
-            }).catch(e => {
-                console.log("Data retrive unsuccessfull");
-                console.log(e);
-            })
     }
 
     return (
