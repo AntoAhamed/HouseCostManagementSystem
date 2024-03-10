@@ -6,12 +6,16 @@ const { body, validationResult } = require('express-validator') //server side va
 const bcrypt = require('bcrypt') //password hashing
 const jwt = require('jsonwebtoken') //JWT authentication
 const fetchuser = require('./middleware')
+const { v4: uuidv4 } = require('uuid');
+const multer = require('multer')
+let path = require('path')
 
 const jwt_secrate = "iamagoodboy"
 
 const app = express()
 const port = 8000
 
+app.use(express.static('public'))
 app.use(express.json())
 app.use(express.urlencoded())
 app.use(cors())
@@ -27,6 +31,7 @@ const usersSchema = new mongoose.Schema({
     name: { type: String },
     email: { type: String },
     password: { type: String },
+    photo: { type: String },
     balance: { type: Number, default: 0.00 },
     limit: { type: Number, default: 0.00 }
 });
@@ -58,7 +63,28 @@ app.get('/', cors(), function (req, res) {
 
 })
 
-app.post('/signup', [
+//to store user image
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'public/images');
+    },
+    filename: function (req, file, cb) {
+        cb(null, uuidv4() + '-' + Date.now() + path.extname(file.originalname));
+    }
+});
+
+const fileFilter = (req, file, cb) => {
+    const allowedFileTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (allowedFileTypes.includes(file.mimetype)) {
+        cb(null, true);
+    } else {
+        cb(null, false);
+    }
+}
+
+let upload = multer({ storage, fileFilter });
+
+app.post('/signup', upload.single('photo'), [
     body('name', 'Enter a valid name').isLength({ min: 3 }),
     body('email', 'Enter a valid email').isEmail(),
     body('password', 'Enter a valid password').isLength({ min: 5 })
@@ -68,6 +94,7 @@ app.post('/signup', [
         return res.send({ errors: result.array() });
     }
 
+    console.log("signup called")
     /*const { name, email, password } = req.body;
 
     const salt = await bcrypt.genSalt(10);
@@ -101,29 +128,46 @@ app.post('/signup', [
     try {
         const { name, email, password } = req.body;
 
+        const photo = req.file.filename;
+
+        console.log(name, email, password, photo);
+
         let user = await USERS.findOne({ email: email });
 
         if (!user) {
             const salt = await bcrypt.genSalt(10);
             const secPass = await bcrypt.hash(password, salt);
 
-            user = await USERS.create({
+            /*user = await USERS.create({
                 name: name,
                 email: email,
-                password: secPass
+                password: secPass,
+                photo: photo
             })
 
             const data = { user: { id: user.id } }
             const authToken = jwt.sign(data, jwt_secrate);
 
-            res.json({ authToken });
+            res.json("success");*/
+
+            const newUserData = {
+                name: name,
+                email: email,
+                password: secPass,
+                photo: photo
+            }
+        
+            const newUser = new USERS(newUserData);
+        
+            newUser.save()
+                   .then(() => res.json("success"))
+                   .catch(err => res.status(400).json('Error: ' + err));
         } else {
             res.json("failed");
         }
     } catch (e) {
         console.log(e);
     }
-
 })
 
 var tmpToken, tmpUser;
@@ -400,6 +444,8 @@ app.get('/getProgress', async (req, res) => {
         console.log(e);
     }
 })
+
+
 
 //START THE SERVER
 app.listen(port, () => {

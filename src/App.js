@@ -64,7 +64,7 @@ function App() {
             <Route path="login" element={user._id ? <Home user={user} setUser={setUser} progress={progress} /> : <Login user={user} setUser={setUser} />} />
             <Route path="signup" element={user._id ? <Home user={user} setUser={setUser} progress={progress} /> : <Signup />} />
             <Route path="add" element={user._id ? <Add user={user} setUser={setUser} progress={progress} /> : <Login user={user} setUser={setUser} />} />
-            <Route path="historyOfCost" element={user._id ? <HistoryOfCost user={user} setUser={setUser} /> : <Login user={user} setUser={setUser} />} />
+            <Route path="historyOfCost" element={user._id ? <HistoryOfCost user={user} setUser={setUser} progress={progress} /> : <Login user={user} setUser={setUser} />} />
             <Route path="historyOfBalance" element={user._id ? <HistoryOfBalance /> : <Login user={user} setUser={setUser} />} />
             <Route path="about" element={<About />} />
             <Route path="contact" element={<Contact />} />

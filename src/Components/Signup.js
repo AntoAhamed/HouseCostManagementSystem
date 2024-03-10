@@ -7,23 +7,41 @@ function Signup() {
     const [name, setName] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [photo, setPhoto] = useState('')
 
     async function signup(e) {
         e.preventDefault();
 
-        if (name !== '' && email !== '' && password !== '') {
+        /*axios.post('http://localhost:5000/users/add/', formData)
+            .then(res => {
+                console.log(res);
+            })
+            .catch(err => {
+                console.log(err);
+            });*/
+
+        if (name !== '' && email !== '' && password !== '' && photo !== '') {
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('email', email);
+            formData.append('password', password);
+            formData.append('photo', photo);
+
             try {
-                await axios.post('http://localhost:8000/signup', { name, email, password })
+                await axios.post('http://localhost:8000/signup', formData)
                     .then(res => {
-                        if (res.data === "failed") {
-                            alert("User already exists with this email!");
-                        }
-                        else {
+                        if (res.data === "success") {
                             alert("You are signed up successfully");
                             setName('');
                             setEmail('');
                             setPassword('');
+                            setPhoto('');
                             navigate("/");
+                        }else if (res.data === "failed") {
+                            alert("User already exists with this email!");
+                        }else{
+                            alert(res.data);
+                            console.log(res.data);
                         }
                     }).catch(e => {
                         console.log(e);
@@ -60,6 +78,10 @@ function Signup() {
                             <div className="mb-4">
                                 <label htmlFor="password" className="form-label text-body-secondary">Password</label>
                                 <input type="password" value={password} onChange={(e) => { setPassword(e.target.value) }} className="form-control form-control-lg" id="password" required />
+                            </div>
+                            <div className='mb-4'>
+                                <label htmlFor="formFileLg" className="form-label text-body-secondary">Upload Your Photo</label>
+                                <input class="form-control form-control-lg" id="formFileLg" type="file" accept=".png, .jpg, .jpeg" onChange={(e) => { setPhoto(e.target.files[0]) }} />
                             </div>
                             <div className="d-grid gap-2 mb-4">
                                 <button type="submit" onClick={signup} className="btn btn-success">Signup</button>

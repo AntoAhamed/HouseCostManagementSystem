@@ -6,10 +6,10 @@ function Profile(props) {
     <div className='add'>
       <h2 className='heading'>Profile of {props.user?.name}</h2>
       <p className='para'>Welcome To HomeCost</p>
-      <div id='addCost' className='container'>
+      <div id='profile' className='container'>
         <div className='row'>
           <div className='col'>
-
+            <img src={`http://localhost:8000/images/` + props.user?.photo} alt='image' />
           </div>
         </div>
         <div className='row'>
