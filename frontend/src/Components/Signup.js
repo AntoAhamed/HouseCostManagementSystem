@@ -2,9 +2,9 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-function Signup() {
+function Signup(props) {
     const {setAlertMssg, alertSystem} = props;
-    
+
     const navigate = useNavigate()
     const [name, setName] = useState('')
     const [email, setEmail] = useState('')
