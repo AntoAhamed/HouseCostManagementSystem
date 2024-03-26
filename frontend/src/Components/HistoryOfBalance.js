@@ -8,7 +8,7 @@ function HistoryOfBalance(props) {
   var sum = 0
 
   async function getData() {
-    await axios.get(`${window.location.origin}/get_balance_history`)
+    await axios.get(`http://localhost:8000/get_balance_history`)
       .then(res => {
         const data = res.data;
         console.log("Data has been received successfully");

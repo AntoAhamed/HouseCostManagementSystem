@@ -14,7 +14,7 @@ function limit(props) {
 
         if (limit !== '' && limit !== preLimit) {
             try {
-                await axios.post(`${window.location.origin}/change_limit`, { limit, email: props.user?.email })
+                await axios.post(`http://localhost:8000/change_limit`, { limit, email: props.user?.email })
                     .then(res => {
                         if (res.data === "success") {
                             alert("Limit updated successfully.");
@@ -36,7 +36,7 @@ function limit(props) {
     }
 
     async function getData() {
-        axios.get(`${window.location.origin}/get_user`)
+        axios.get(`http://localhost:8000/get_user`)
             .then(res => {
                 const data = res.data;
                 console.log("Data has been received successfully");

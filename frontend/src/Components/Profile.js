@@ -9,7 +9,7 @@ function Profile(props) {
       <div id='profile' className='container'>
         <div className='row'>
           <div className='col'>
-            <img src={`${window.location.origin}/images/` + props.user?.photo} alt='image' />
+            <img src={`http://localhost:8000/images/` + props.user?.photo} alt='image' />
           </div>
         </div>
         <div className='row'>

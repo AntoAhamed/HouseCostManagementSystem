@@ -14,7 +14,7 @@ function Login(props) {
 
         if (email !== '' && password !== '') {
             try {
-                await axios.post(`${window.location.origin}/login`, { email, password })
+                await axios.post(`http://localhost:8000/login`, { email, password })
                     .then(res => {
                         if (res.data === "failed") {
                             alert("User dose not exists!");
