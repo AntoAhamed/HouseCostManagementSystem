@@ -8,7 +8,7 @@ function HistoryOfCost(props) {
   var sum = 0
 
   async function getData() {
-    await axios.get("http://localhost:8000/get_history")
+    await axios.get(`${window.location.origin}/get_history`)
       .then(res => {
         const data = res.data;
         console.log("Data has been received successfully");
@@ -21,7 +21,7 @@ function HistoryOfCost(props) {
   }
 
   async function getUser() {
-    await axios.get("http://localhost:8000/get_user")
+    await axios.get(`${window.location.origin}/get_user`)
       .then(res => {
         const data = res.data;
         console.log("Data has been received successfully");
@@ -36,7 +36,7 @@ function HistoryOfCost(props) {
 
   async function remove(id, cost) {
     try {
-      await axios.post('http://localhost:8000/remove', { id, cost, email: props.user?.email })
+      await axios.post(`${window.location.origin}/remove`, { id, cost, email: props.user?.email })
         .then(res => {
           if (res.data === "success") {
             getData();

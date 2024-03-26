@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken') //JWT authentication
 const fetchuser = require('./middleware')
 const { v4: uuidv4 } = require('uuid');
 const multer = require('multer')
-let path = require('path')
+const path = require('path')
 
 const jwt_secrate = "iamagoodboy"
 
@@ -445,6 +445,12 @@ app.get('/getProgress', async (req, res) => {
 
 //other apis
 
+
+
+app.get("/", (req, res) => {
+    app.use(express.static(path.resolve(__dirname, "frontend", "build")));
+    res.sendFile(path.resolve(__dirname, "frontend", "build", "index.html"))
+})
 
 //START THE SERVER
 app.listen(port, () => {

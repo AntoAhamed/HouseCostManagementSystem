@@ -35,7 +35,7 @@ function App() {
   console.log(user)
 
   const progress = async () => {
-    await axios.get('http://localhost:8000/getProgress')
+    await axios.get(`${window.location.origin}/getProgress`)
       .then(res => {
         if (res.data !== "failed") {
           const data = res.data.prog;

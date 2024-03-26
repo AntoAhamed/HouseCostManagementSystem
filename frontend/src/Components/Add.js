@@ -14,7 +14,7 @@ function Add(props) {
 
         if (amount !== '' && amount !== 0) {
             try {
-                await axios.post('http://localhost:8000/add_amount', { amount, email: props.user?.email })
+                await axios.post(`${window.location.origin}/add_amount`, { amount, email: props.user?.email })
                     .then(res => {
                         if (res.data === "success") {
                             alert("Balance added successfully");
@@ -37,7 +37,7 @@ function Add(props) {
     }
 
     async function getData() {
-        axios.get("http://localhost:8000/get_user")
+        axios.get(`${window.location.origin}/get_user`)
             .then(res => {
                 const data = res.data;
                 console.log("Data has been received successfully");
@@ -51,7 +51,7 @@ function Add(props) {
     }
 
     async function getDataOfRem() {
-        axios.get("http://localhost:8000/get_rem")
+        axios.get(`${window.location.origin}/get_rem`)
             .then(res => {
                 const data = res.data.total;
                 console.log("Data has been received successfully");

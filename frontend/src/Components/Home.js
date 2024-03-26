@@ -12,7 +12,7 @@ function Home(props) {
 
     if (desc !== '' && cost !== '' && cost !== 0) {
       try {
-        await axios.post('http://localhost:8000/add_details', { desc, cost, email: props.user?.email })
+        await axios.post(`${window.location.origin}/add_details`, { desc, cost, email: props.user?.email })
           .then(res => {
             if (res.data == "success") {
               alert("Added successfully.");
@@ -38,7 +38,7 @@ function Home(props) {
   }
 
   async function getData() {
-    await axios.get("http://localhost:8000/get_user")
+    await axios.get(`${window.location.origin}/get_user`)
       .then(res => {
         const data = res.data;
         console.log("Data has been received successfully");

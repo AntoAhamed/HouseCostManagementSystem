@@ -30,7 +30,7 @@ function Signup(props) {
             formData.append('photo', photo);
 
             try {
-                await axios.post('http://localhost:8000/signup', formData)
+                await axios.post(`${window.location.origin}/signup`, formData)
                     .then(res => {
                         if (res.data === "success") {
                             alert("You are signed up successfully");
